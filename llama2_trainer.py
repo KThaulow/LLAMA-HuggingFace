@@ -7,7 +7,6 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfi
 # Loading the model
 llama_model = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path = "aboonaji/llama2finetune-v2",
                                                    device_map='mps',
-                                                   low_cpu_mem_usage = True,
                                                    quantization_config = BitsAndBytesConfig(load_in_4bit = True, bnb_4bit_compute_dtype = getattr(torch, "float16"), bnb_4bit_quant_type = "nf4"))
 llama_model.config.use_cache = False
 llama_model.config.pretraining_tp = 1
@@ -31,8 +30,4 @@ llama_sft_trainer = SFTTrainer(model = llama_model,
 # Training the model
 llama_sft_trainer.train()
 
-# Chatting with the model
-user_prompt = "Please tell me about Bursitis"
-text_generation_pipeline = pipeline(task = "text-generation", model = llama_model, tokenizer = llama_tokenizer, max_length = 300)
-model_answer = text_generation_pipeline(f"<s>[INST] {user_prompt} [/INST]")
-print(model_answer[0]['generated_text'])
+llama_sft_trainer.save_model("./trained_model")
