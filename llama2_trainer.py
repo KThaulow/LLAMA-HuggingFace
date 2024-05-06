@@ -5,9 +5,14 @@ from datasets import load_dataset
 from transformers import (AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, TrainingArguments, pipeline)
 
 # Loading the model
+# Load in 5 bit for memory optimization, change to torch float16 for performance improvement and use nf4 for normal distribution weights
+# https://medium.com/@rakeshrajpurohit/model-quantization-with-hugging-face-transformers-and-bitsandbytes-integration-b4c9983e8996
+quantization_config = BitsAndBytesConfig(load_in_4bit = True, bnb_4bit_compute_dtype = getattr(torch, "float16"), bnb_4bit_quant_type = "nf4")
 llama_model = AutoModelForCausalLM.from_pretrained(pretrained_model_name_or_path = "aboonaji/llama2finetune-v2",
                                                    device_map='mps',
-                                                   quantization_config = BitsAndBytesConfig(load_in_4bit = True, bnb_4bit_compute_dtype = getattr(torch, "float16"), bnb_4bit_quant_type = "nf4"))
+                                                   quantization_config = quantization_config)
+
+# https://huggingface.co/docs/transformers/model_doc/llama2
 llama_model.config.use_cache = False
 llama_model.config.pretraining_tp = 1
 
